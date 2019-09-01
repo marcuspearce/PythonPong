@@ -40,8 +40,9 @@ ball.color("white")
 ball.penup() 	# since default turtles draw line in motion
 ball.goto(0,0)
 
-ball.dx = 3		# change in speed - every time ball moves moves by 2 pixels
-ball.dy = 3		# change in speed
+baseSpeed = 3
+ball.dx = baseSpeed		# change in speed - every time ball moves moves by 2 pixel
+ball.dy = baseSpeed	
 
 
 # Score variables 
@@ -88,6 +89,14 @@ def updateScore():
 	pen.clear()
 	pen.write("Red: {}  Blue: {}".format(score_a,score_b), align="center", font=("Courier", 24, "normal"))
 
+def resetBallSpeed():
+	ball.dx = baseSpeed
+	ball.dy = baseSpeed
+
+def incBallSpeed():
+	ball.dx *= 1.2
+	ball.dy *= 1.2
+
 
 # Keyboard binding
 win.listen()
@@ -108,7 +117,8 @@ while True:
 	ball.sety(ball.ycor() + ball.dy)
 
 
-	# border checking
+	# border checking - ball 
+
 	#top border
 	if ball.ycor() > 290:
 		ball.sety(290)
@@ -121,24 +131,43 @@ while True:
 		ball.dy *= -1	# reverse direction in y direction
 		# used to play sound -> mac specific || ampersand at end so that doesn't stop game loop for duration of sound
 		os.system("afplay bounce.wav&")
-	#right border
+	#right border - WIN CONDITION
 	if ball.xcor() > 390:
 		ball.goto(0,0)	# put ball back in centre
 		ball.dx *= -1 	# reverse starting direction of ball
 		score_a += 1
-	#left border
+		resetBallSpeed()
+	#left border - WIN CONDITION
 	if ball.xcor() < -390:
 		ball.goto(0,0)	# put ball back in centre
 		ball.dx *= -1 	# reverse starting direction of ball
 		score_b += 1
+		resetBallSpeed()
+
+
+	# border checking - paddles
+
+	# paddle a
+	if paddle_a.ycor()+40 > 290:
+		paddle_a.sety(290-40)		# don't allow to move any further up
+	if paddle_a.ycor()-40 < -290:
+		paddle_a.sety(-280+40)		# don't allow to move any further down
+	# paddle b
+	if paddle_b.ycor()+40 > 290:
+		paddle_b.sety(290-40)		# don't allow to move any further up
+	if paddle_b.ycor()-40 < -290:
+		paddle_b.sety(-280+40)		# don't allow to move any further down
+
 
 
 	# paddle and ball collisions
+
 	# paddle a (left)
 		# check if ball within area of paddle - NOTE y coords are not symmetric cuz centre of ball is not true centre (changes orientation w/ direction)
 	if (ball.xcor() < -340 and ball.xcor() > -350) and (ball.ycor() < paddle_a.ycor() + 50 and ball.ycor() > paddle_a.ycor() - 40):
 		ball.setx(-340)	# so doesn't get stuck inside paddle
 		ball.dx *= -1
+		incBallSpeed()	# speed of ball increases w/ each paddle hit
 		# used to play sound -> mac specific || ampersand at end so that doesn't stop game loop for duration of sound
 		os.system("afplay bounce.wav&")
 	# paddle b (right)
@@ -146,6 +175,7 @@ while True:
 	if (ball.xcor() > 340 and ball.xcor() < 350) and (ball.ycor() < paddle_b.ycor() + 40 and ball.ycor() > paddle_b.ycor() - 50):
 		ball.setx(340)	# so doesn't get stuck inside paddle
 		ball.dx *= -1
+		incBallSpeed()
 		# used to play sound -> mac specific || ampersand at end so that doesn't stop game loop for duration of sound
 		os.system("afplay bounce.wav&")
 
